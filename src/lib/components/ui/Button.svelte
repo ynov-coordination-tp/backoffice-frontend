@@ -4,6 +4,7 @@
   export let variant: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' = 'primary';
   export let size: 'sm' | 'md' | 'lg' = 'md';
   export let isLoading = false;
+  export let disabled = false;
   export let className = '';
 
   const baseStyles =
@@ -27,7 +28,7 @@
 
 <button
   class={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
-  disabled={isLoading || ($$restProps as any).disabled}
+  disabled={isLoading || disabled}
   {...$$restProps}
 >
   {#if isLoading}

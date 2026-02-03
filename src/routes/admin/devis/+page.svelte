@@ -3,22 +3,13 @@
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import Input from '$lib/components/ui/Input.svelte';
-  import Select, { type Option } from '$lib/components/ui/Select.svelte';
+  import Select from '$lib/components/ui/Select.svelte';
   import Badge from '$lib/components/ui/Badge.svelte';
   import Modal from '$lib/components/ui/Modal.svelte';
-  import {
-    CheckCircle,
-    Clock,
-    Download,
-    Edit2,
-    Eye,
-    FileText,
-    Filter,
-    Trash2,
-    XCircle
-  } from 'lucide-svelte';
+  import { Download, Edit2, Eye, FileText, Filter, Trash2, XCircle } from 'lucide-svelte';
 
   type DevisStatus = 'confirmed' | 'pending' | 'draft' | 'cancelled';
+  type Option = { value: string; label: string };
   type Devis = {
     id: string;
     client: string;
@@ -102,7 +93,9 @@
     { value: 'cancelled', label: 'Annulé' }
   ];
 
-  const badgeVariant = (status: DevisStatus): any => {
+  type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'purple';
+
+  const badgeVariant = (status: DevisStatus): BadgeVariant => {
     switch (status) {
       case 'confirmed':
         return 'success';
@@ -112,10 +105,12 @@
         return 'error';
       case 'draft':
         return 'info';
+      default:
+        return 'neutral';
     }
   };
 
-  const statusLabel = (status: DevisStatus) => {
+  const statusLabel = (status: DevisStatus): string => {
     switch (status) {
       case 'confirmed':
         return 'Confirmé';
@@ -125,6 +120,8 @@
         return 'Annulé';
       case 'draft':
         return 'Brouillon';
+      default:
+        return 'Inconnu';
     }
   };
 
@@ -277,7 +274,14 @@
 
     <div class="mt-6 flex justify-end gap-2">
       <Button variant="secondary" on:click={() => (isViewModalOpen = false)}>Fermer</Button>
-      <Button on:click={() => (isEditModalOpen = true)}>Modifier</Button>
+      <Button
+        on:click={() => {
+          isViewModalOpen = false;
+          isEditModalOpen = true;
+        }}
+      >
+        Modifier
+      </Button>
     </div>
   {/if}
 </Modal>

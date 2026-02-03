@@ -21,13 +21,14 @@
           <input
             type="text"
             placeholder="Rechercher..."
+            aria-label="Rechercher"
             class="pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
           />
         </div>
 
-        <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors" type="button">
+        <button class="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors" type="button" aria-label="Notifications">
           <Bell class="w-5 h-5" />
-          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" aria-hidden="true"></span>
         </button>
 
         <slot />

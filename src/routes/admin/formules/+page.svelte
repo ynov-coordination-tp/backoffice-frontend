@@ -19,7 +19,9 @@
     { id: 'F-003', name: 'Poseidon', tier: 'Basic', price: '€', status: 'draft' }
   ];
 
-  const badge = (s: Formule['status']) => (s === 'active' ? { v: 'success', t: 'Actif' } : { v: 'info', t: 'Brouillon' });
+  type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'purple';
+  const badge = (s: Formule['status']): { v: BadgeVariant; t: string } =>
+    s === 'active' ? { v: 'success', t: 'Actif' } : { v: 'info', t: 'Brouillon' };
 </script>
 
 <Header title="Gestion des formules" subtitle="Gérez vos offres et packs (maquette)">

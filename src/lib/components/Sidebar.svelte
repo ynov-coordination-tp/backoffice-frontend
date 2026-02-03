@@ -1,6 +1,11 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte';
   import { page } from '$app/stores';
-  import { Bike, FileText, LayoutDashboard, LogOut, Map, Package, Settings } from 'lucide-svelte';
+  import { Bike, FileText, LayoutDashboard, LogOut, Map, Package, Settings, X } from 'lucide-svelte';
+
+  export let isOpen = false;
+
+  const dispatch = createEventDispatcher<{ close: void }>();
 
   const menuItems = [
     { href: '/admin', label: 'Tableau de bord', Icon: LayoutDashboard },
@@ -13,14 +18,35 @@
   const isActive = (href: string, currentPath: string) => (href === '/admin' ? currentPath === '/admin' : currentPath.startsWith(href));
 </script>
 
-<aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col shadow-xl z-30">
-  <div class="p-6 border-b border-slate-700/50">
+{#if isOpen}
+  <button
+    type="button"
+    class="fixed inset-0 bg-slate-900/40 md:hidden z-20"
+    aria-label="Fermer le menu"
+    on:click={() => dispatch('close')}
+  ></button>
+{/if}
+
+<aside
+  class={`fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col shadow-xl z-30 transition-transform duration-200 ${
+    isOpen ? 'translate-x-0' : '-translate-x-full'
+  } md:translate-x-0`}
+>
+  <div class="p-6 border-b border-slate-700/50 flex items-center justify-between">
     <div class="flex items-center space-x-3">
       <div class="bg-blue-600 p-2 rounded-lg">
         <Bike class="w-6 h-6 text-white" />
       </div>
       <span class="text-xl font-bold tracking-tight">Motomamis</span>
     </div>
+    <button
+      type="button"
+      class="md:hidden text-slate-400 hover:text-white transition-colors"
+      aria-label="Fermer le menu"
+      on:click={() => dispatch('close')}
+    >
+      <X class="w-5 h-5" />
+    </button>
   </div>
 
   <nav class="flex-1 py-6 px-3 space-y-1">
@@ -48,10 +74,18 @@
       </div>
     </div>
     <div class="flex space-x-1">
-      <button class="flex-1 flex items-center justify-center p-2 rounded hover:bg-white/5 text-slate-400 hover:text-white transition-colors" type="button">
+      <button
+        class="flex-1 flex items-center justify-center p-2 rounded hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+        type="button"
+        aria-label="Paramètres"
+      >
         <Settings class="w-4 h-4" />
       </button>
-      <button class="flex-1 flex items-center justify-center p-2 rounded hover:bg-white/5 text-slate-400 hover:text-red-400 transition-colors" type="button">
+      <button
+        class="flex-1 flex items-center justify-center p-2 rounded hover:bg-white/5 text-slate-400 hover:text-red-400 transition-colors"
+        type="button"
+        aria-label="Se déconnecter"
+      >
         <LogOut class="w-4 h-4" />
       </button>
     </div>

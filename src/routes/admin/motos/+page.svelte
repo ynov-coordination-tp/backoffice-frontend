@@ -60,8 +60,12 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm"><Badge variant={badge(m.status)}>{label(m.status)}</Badge></td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                 <div class="inline-flex items-center gap-1">
-                  <button class="p-2 rounded hover:bg-slate-100 text-slate-500" type="button"><Edit2 class="w-4 h-4" /></button>
-                  <button class="p-2 rounded hover:bg-red-50 text-red-500" type="button"><Trash2 class="w-4 h-4" /></button>
+                  <button class="p-2 rounded hover:bg-slate-100 text-slate-500" type="button" aria-label="Éditer">
+                    <Edit2 class="w-4 h-4" />
+                  </button>
+                  <button class="p-2 rounded hover:bg-red-50 text-red-500" type="button" aria-label="Supprimer">
+                    <Trash2 class="w-4 h-4" />
+                  </button>
                 </div>
               </td>
             </tr>
