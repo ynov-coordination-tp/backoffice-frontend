@@ -41,6 +41,9 @@
     priceFrom: ''
   };
 
+  let isViewModalOpen = false;
+  let currentCircuit: Circuit | null = null;
+
   let isEditModalOpen = false;
   let currentCircuitId: string | null = null;
   let editForm: Omit<Circuit, 'id'> = {
@@ -91,6 +94,11 @@
   function handleCreateSave() {
     circuits = [...circuits, { ...createForm, id: nextCircuitId() }];
     isCreateModalOpen = false;
+  }
+
+  function handleViewOpen(c: Circuit) {
+    currentCircuit = c;
+    isViewModalOpen = true;
   }
 
   function handleEditOpen(c: Circuit) {
@@ -146,7 +154,14 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{c.priceFrom}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                 <div class="inline-flex items-center gap-1">
-                  <button class="p-2 rounded hover:bg-slate-100 text-slate-500" type="button" aria-label="Voir"><Eye class="w-4 h-4" /></button>
+                  <button
+                    class="p-2 rounded hover:bg-slate-100 text-slate-500"
+                    type="button"
+                    aria-label="Voir"
+                    on:click={() => handleViewOpen(c)}
+                  >
+                    <Eye class="w-4 h-4" />
+                  </button>
                   <button
                     class="p-2 rounded hover:bg-slate-100 text-slate-500"
                     type="button"
@@ -181,6 +196,43 @@
     <Button variant="secondary" on:click={() => (isCreateModalOpen = false)}>Annuler</Button>
     <Button on:click={handleCreateSave}>Ajouter</Button>
   </div>
+</Modal>
+
+<Modal isOpen={isViewModalOpen} title="Détail du circuit" size="lg" on:close={() => (isViewModalOpen = false)}>
+  {#if currentCircuit}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="space-y-3">
+        <div class="text-sm text-slate-500">ID</div>
+        <div class="font-semibold">{currentCircuit.id}</div>
+        <div class="text-sm text-slate-500">Nom</div>
+        <div class="font-semibold">{currentCircuit.name}</div>
+        <div class="text-sm text-slate-500">Région</div>
+        <div class="font-semibold">{currentCircuit.region}</div>
+      </div>
+      <div class="space-y-3">
+        <div class="text-sm text-slate-500">Durée</div>
+        <div class="font-semibold">{currentCircuit.duration}</div>
+        <div class="text-sm text-slate-500">Difficulté</div>
+        <Badge variant={diffVar(currentCircuit.difficulty)}>{currentCircuit.difficulty}</Badge>
+        <div class="text-sm text-slate-500">À partir de</div>
+        <div class="font-semibold">{currentCircuit.priceFrom}</div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end gap-2">
+      <Button variant="secondary" on:click={() => (isViewModalOpen = false)}>Fermer</Button>
+      <Button
+        on:click={() => {
+          const circuit = currentCircuit;
+          if (!circuit) return;
+          isViewModalOpen = false;
+          handleEditOpen(circuit);
+        }}
+      >
+        Modifier
+      </Button>
+    </div>
+  {/if}
 </Modal>
 
 <Modal isOpen={isEditModalOpen} title="Modifier le circuit" size="lg" on:close={() => (isEditModalOpen = false)}>

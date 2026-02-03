@@ -6,7 +6,7 @@
   import Input from '$lib/components/ui/Input.svelte';
   import Select from '$lib/components/ui/Select.svelte';
   import Modal from '$lib/components/ui/Modal.svelte';
-  import { Bike, Plus, Edit2, Trash2 } from 'lucide-svelte';
+  import { Bike, Plus, Edit2, Trash2, Eye } from 'lucide-svelte';
 
   type Option = { value: string; label: string };
   type Moto = {
@@ -55,6 +55,9 @@
     dailyPrice: 0,
     status: 'available'
   };
+
+  let isViewModalOpen = false;
+  let currentMoto: Moto | null = null;
 
   let isDeleteModalOpen = false;
 
@@ -122,6 +125,11 @@
     currentMotoId = null;
   }
 
+  function handleViewOpen(m: Moto) {
+    currentMoto = m;
+    isViewModalOpen = true;
+  }
+
   function handleDeleteOpen(m: Moto) {
     currentMotoId = m.id;
     currentMotoModel = m.model;
@@ -176,6 +184,14 @@
                   <button
                     class="p-2 rounded hover:bg-slate-100 text-slate-500"
                     type="button"
+                    aria-label="Voir"
+                    on:click={() => handleViewOpen(m)}
+                  >
+                    <Eye class="w-4 h-4" />
+                  </button>
+                  <button
+                    class="p-2 rounded hover:bg-slate-100 text-slate-500"
+                    type="button"
                     aria-label="Éditer"
                     on:click={() => handleEditOpen(m)}
                   >
@@ -227,6 +243,41 @@
     <Button variant="secondary" on:click={() => (isEditModalOpen = false)}>Annuler</Button>
     <Button on:click={handleEditSave}>Enregistrer</Button>
   </div>
+</Modal>
+
+<Modal isOpen={isViewModalOpen} title="Détail de la moto" size="lg" on:close={() => (isViewModalOpen = false)}>
+  {#if currentMoto}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="space-y-3">
+        <div class="text-sm text-slate-500">ID</div>
+        <div class="font-semibold">{currentMoto.id}</div>
+        <div class="text-sm text-slate-500">Modèle</div>
+        <div class="font-semibold">{currentMoto.model}</div>
+        <div class="text-sm text-slate-500">Catégorie</div>
+        <div class="font-semibold">{currentMoto.category}</div>
+      </div>
+      <div class="space-y-3">
+        <div class="text-sm text-slate-500">Prix/jour</div>
+        <div class="font-semibold">{currentMoto.dailyPrice} €</div>
+        <div class="text-sm text-slate-500">Statut</div>
+        <Badge variant={badge(currentMoto.status)}>{label(currentMoto.status)}</Badge>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-end gap-2">
+      <Button variant="secondary" on:click={() => (isViewModalOpen = false)}>Fermer</Button>
+      <Button
+        on:click={() => {
+          const moto = currentMoto;
+          if (!moto) return;
+          isViewModalOpen = false;
+          handleEditOpen(moto);
+        }}
+      >
+        Modifier
+      </Button>
+    </div>
+  {/if}
 </Modal>
 
 <Modal isOpen={isDeleteModalOpen} title="Supprimer la moto" size="md" on:close={() => (isDeleteModalOpen = false)}>
