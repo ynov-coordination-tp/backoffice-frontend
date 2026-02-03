@@ -2,7 +2,7 @@
   import Header from '$lib/components/Header.svelte';
 </script>
 
-<Header title="Tableau de Bord" />
+<Header title="Tableau de Bord" showSearch={false} />
 
 <div class="p-8">
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

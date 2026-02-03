@@ -21,9 +21,23 @@
   ];
 
   const diffVar = (d: Circuit['difficulty']) => (d === 'Difficile' ? 'error' : d === 'Moyen' ? 'warning' : 'success');
+
+  let search = '';
+
+  $: filtered = circuits.filter((c) => {
+    const q = search.trim().toLowerCase();
+    return (
+      !q ||
+      c.name.toLowerCase().includes(q) ||
+      c.region.toLowerCase().includes(q) ||
+      c.duration.toLowerCase().includes(q) ||
+      c.difficulty.toLowerCase().includes(q) ||
+      c.priceFrom.toLowerCase().includes(q)
+    );
+  });
 </script>
 
-<Header title="Gestion des circuits" subtitle="Créez et maintenez vos parcours proposés à la réservation">
+<Header title="Gestion des circuits" subtitle="Créez et maintenez vos parcours proposés à la réservation" bind:search>
   <Button>
     <Plus class="w-4 h-4 mr-2" />
     Nouveau circuit
@@ -31,7 +45,7 @@
 </Header>
 
 <div class="p-8 space-y-6">
-  <Card title="Circuits" subtitle={`${circuits.length} circuit(s)`}>
+  <Card title="Circuits" subtitle={`${filtered.length} circuit(s)`}>
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
@@ -45,7 +59,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-slate-200">
-          {#each circuits as c}
+          {#each filtered as c}
             <tr class="hover:bg-slate-50">
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{c.name}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{c.region}</td>
@@ -62,6 +76,10 @@
           {/each}
         </tbody>
       </table>
+
+      {#if filtered.length === 0}
+        <div class="text-center py-12 text-slate-500 text-sm">Aucune donnée disponible</div>
+      {/if}
     </div>
   </Card>
 

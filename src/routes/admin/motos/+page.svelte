@@ -22,9 +22,22 @@
 
   const badge = (s: Moto['status']) => (s === 'available' ? 'success' : 'warning');
   const label = (s: Moto['status']) => (s === 'available' ? 'Disponible' : 'Maintenance');
+
+  let search = '';
+
+  $: filtered = motos.filter((m) => {
+    const q = search.trim().toLowerCase();
+    return (
+      !q ||
+      m.id.toLowerCase().includes(q) ||
+      m.model.toLowerCase().includes(q) ||
+      m.category.toLowerCase().includes(q) ||
+      label(m.status).toLowerCase().includes(q)
+    );
+  });
 </script>
 
-<Header title="Prix des motos" subtitle="Gérez la flotte et les tarifs journaliers">
+<Header title="Prix des motos" subtitle="Gérez la flotte et les tarifs journaliers" bind:search>
   <Button>
     <Plus class="w-4 h-4 mr-2" />
     Ajouter une moto
@@ -32,7 +45,7 @@
 </Header>
 
 <div class="p-8 space-y-6">
-  <Card title="Tarifs" subtitle={`${motos.length} moto(s)`}>
+  <Card title="Tarifs" subtitle={`${filtered.length} moto(s)`}>
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-slate-200">
         <thead class="bg-slate-50">
@@ -46,7 +59,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-slate-200">
-          {#each motos as m, idx (m.id)}
+          {#each filtered as m, idx (m.id)}
             <tr class={`hover:bg-slate-50 transition-colors duration-150 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{m.id}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
@@ -72,6 +85,10 @@
           {/each}
         </tbody>
       </table>
+
+      {#if filtered.length === 0}
+        <div class="text-center py-12 text-slate-500 text-sm">Aucune donnée disponible</div>
+      {/if}
     </div>
   </Card>
 </div>

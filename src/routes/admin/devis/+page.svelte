@@ -158,6 +158,7 @@
 <Header
   title="Gestion des devis"
   subtitle="Consultez, filtrez et gérez vos demandes de devis"
+  showSearch={false}
 >
   <Button variant="secondary" on:click={() => (isExportModalOpen = true)}>
     <Download class="w-4 h-4 mr-2" />

@@ -22,9 +22,24 @@
   type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'purple';
   const badge = (s: Formule['status']): { v: BadgeVariant; t: string } =>
     s === 'active' ? { v: 'success', t: 'Actif' } : { v: 'info', t: 'Brouillon' };
+
+  let search = '';
+
+  $: filtered = FORMULES.filter((f) => {
+    const q = search.trim().toLowerCase();
+    const statusLabel = badge(f.status).t.toLowerCase();
+    return (
+      !q ||
+      f.id.toLowerCase().includes(q) ||
+      f.name.toLowerCase().includes(q) ||
+      f.tier.toLowerCase().includes(q) ||
+      f.price.toLowerCase().includes(q) ||
+      statusLabel.includes(q)
+    );
+  });
 </script>
 
-<Header title="Gestion des formules" subtitle="Gérez vos offres et packs (maquette)">
+<Header title="Gestion des formules" subtitle="Gérez vos offres et packs (maquette)" bind:search>
   <Button on:click={() => alert('Maquette : créer une formule')}>
     <Plus class="w-4 h-4 mr-2" />
     Nouvelle formule
@@ -45,7 +60,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-slate-200">
-          {#each FORMULES as f (f.id)}
+          {#each filtered as f (f.id)}
             {@const b = badge(f.status)}
             <tr class="hover:bg-slate-50">
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
@@ -65,6 +80,10 @@
           {/each}
         </tbody>
       </table>
+
+      {#if filtered.length === 0}
+        <div class="text-center py-12 text-slate-500 text-sm">Aucune donnée disponible</div>
+      {/if}
     </div>
   </Card>
 </div>
