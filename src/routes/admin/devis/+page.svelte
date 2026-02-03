@@ -1,5 +1,6 @@
 <script lang="ts">
   import Header from '$lib/components/Header.svelte';
+  import type { NotificationItem } from '$lib/types/notifications';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import Input from '$lib/components/ui/Input.svelte';
@@ -125,6 +126,19 @@
     }
   };
 
+  const makeNotifications = (items: Devis[]): NotificationItem[] =>
+    items
+      .filter((d) => d.status === 'pending' || d.status === 'draft')
+      .map((d) => ({
+        id: d.id,
+        title: `Devis ${statusLabel(d.status)}`,
+        description: `${d.client} - ${d.circuit}`,
+        date: d.date,
+        read: false
+      }));
+
+  let notifications = makeNotifications(MOCK_DEVIS);
+
   $: filtered = MOCK_DEVIS.filter((d) => {
     const statusOk = filterStatus === 'all' ? true : d.status === filterStatus;
     const q = search.trim().toLowerCase();
@@ -153,12 +167,23 @@
     currentDevis = d;
     isDeleteModalOpen = true;
   }
+
+  const markAllRead = () => {
+    notifications = notifications.map((n) => ({ ...n, read: true }));
+  };
+
+  const markRead = (id: string) => {
+    notifications = notifications.map((n) => (n.id === id ? { ...n, read: true } : n));
+  };
 </script>
 
 <Header
   title="Gestion des devis"
   subtitle="Consultez, filtrez et gérez vos demandes de devis"
   showSearch={false}
+  notifications={notifications}
+  on:markAllRead={markAllRead}
+  on:markRead={(event) => markRead(event.detail)}
 >
   <Button variant="secondary" on:click={() => (isExportModalOpen = true)}>
     <Download class="w-4 h-4 mr-2" />
