@@ -10,8 +10,7 @@
     { href: '/admin/formules', label: 'Gestion des formules', Icon: Package }
   ] as const;
 
-  $: path = $page.url.pathname;
-  const isActive = (href: string) => (href === '/admin' ? path === '/admin' : path.startsWith(href));
+  const isActive = (href: string, currentPath: string) => (href === '/admin' ? currentPath === '/admin' : currentPath.startsWith(href));
 </script>
 
 <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col shadow-xl z-30">
@@ -20,13 +19,13 @@
       <div class="bg-blue-600 p-2 rounded-lg">
         <Bike class="w-6 h-6 text-white" />
       </div>
-      <span class="text-xl font-bold tracking-tight">Voyages Moto</span>
+      <span class="text-xl font-bold tracking-tight">Motomamis</span>
     </div>
   </div>
 
   <nav class="flex-1 py-6 px-3 space-y-1">
     {#each menuItems as item}
-      {@const active = isActive(item.href)}
+      {@const active = isActive(item.href, $page.url.pathname)}
       <a
         href={item.href}
         class={`
