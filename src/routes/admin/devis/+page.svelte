@@ -168,6 +168,11 @@
     isDeleteModalOpen = true;
   }
 
+  function handleResetFilters() {
+    filterStatus = 'all';
+    search = '';
+  }
+
   const markAllRead = () => {
     notifications = notifications.map((n) => ({ ...n, read: true }));
   };
@@ -204,7 +209,7 @@
       <div class="w-full md:w-64">
         <Select label="Statut" bind:value={filterStatus} options={statusOptions} />
       </div>
-      <Button variant="secondary" on:click={() => (filterStatus = 'all')}>
+      <Button variant="secondary" on:click={handleResetFilters}>
         <Filter class="w-4 h-4 mr-2" />
         Réinitialiser
       </Button>
@@ -315,7 +320,7 @@
 <!-- CREATE / EDIT (maquette) -->
 <Modal isOpen={isCreateModalOpen} title="Créer un devis" size="xl" on:close={() => (isCreateModalOpen = false)}>
   <p class="text-slate-600 text-sm mb-6">
-    Maquette: ici tu brancheras ton vrai formulaire (SvelteKit + API). Pour l’instant, on garde un layout fidèle au React.
+    Remplissez les informations ci-dessous pour créer un nouveau devis pour un client intéressé par nos circuits moto.(pas encore connecter)
   </p>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <Input label="Client" placeholder="Nom et prénom" />
@@ -369,7 +374,7 @@
 <!-- EXPORT -->
 <Modal isOpen={isExportModalOpen} title="Exporter" size="md" on:close={() => (isExportModalOpen = false)}>
   <div class="space-y-4">
-    <p class="text-sm text-slate-600">Maquette: choix du format et de la plage.</p>
+    <p class="text-sm text-slate-600">PAS ENCORE FUNCTIONNEL</p>
     <div class="grid grid-cols-1 gap-3">
       <Button variant="secondary"><Download class="w-4 h-4 mr-2" />CSV</Button>
       <Button variant="secondary"><Download class="w-4 h-4 mr-2" />Excel</Button>

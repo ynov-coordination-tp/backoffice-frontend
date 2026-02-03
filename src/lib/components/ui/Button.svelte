@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte';
   import { Loader2 } from 'lucide-svelte';
 
   export let variant: 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' = 'primary';
@@ -6,6 +7,13 @@
   export let isLoading = false;
   export let disabled = false;
   export let className = '';
+
+  const dispatch = createEventDispatcher<{ click: MouseEvent }>();
+
+  const handleClick = (event: MouseEvent) => {
+    if (isLoading || disabled) return;
+    dispatch('click', event);
+  };
 
   const baseStyles =
     'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95';
@@ -29,6 +37,7 @@
 <button
   class={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
   disabled={isLoading || disabled}
+  on:click={handleClick}
   {...$$restProps}
 >
   {#if isLoading}
