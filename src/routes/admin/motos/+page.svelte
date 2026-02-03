@@ -48,12 +48,15 @@
 
   let isEditModalOpen = false;
   let currentMotoId: string | null = null;
+  let currentMotoModel: string | null = null;
   let editForm: Omit<Moto, 'id'> = {
     model: '',
     category: 'Roadster',
     dailyPrice: 0,
     status: 'available'
   };
+
+  let isDeleteModalOpen = false;
 
   let search = '';
 
@@ -118,6 +121,20 @@
     isEditModalOpen = false;
     currentMotoId = null;
   }
+
+  function handleDeleteOpen(m: Moto) {
+    currentMotoId = m.id;
+    currentMotoModel = m.model;
+    isDeleteModalOpen = true;
+  }
+
+  function handleDeleteConfirm() {
+    if (!currentMotoId) return;
+    motos = motos.filter((m) => m.id !== currentMotoId);
+    isDeleteModalOpen = false;
+    currentMotoId = null;
+    currentMotoModel = null;
+  }
 </script>
 
 <Header title="Prix des motos" subtitle="Gérez la flotte et les tarifs journaliers" bind:search>
@@ -164,7 +181,12 @@
                   >
                     <Edit2 class="w-4 h-4" />
                   </button>
-                  <button class="p-2 rounded hover:bg-red-50 text-red-500" type="button" aria-label="Supprimer">
+                  <button
+                    class="p-2 rounded hover:bg-red-50 text-red-500"
+                    type="button"
+                    aria-label="Supprimer"
+                    on:click={() => handleDeleteOpen(m)}
+                  >
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
@@ -204,5 +226,22 @@
   <div class="mt-6 flex justify-end gap-2">
     <Button variant="secondary" on:click={() => (isEditModalOpen = false)}>Annuler</Button>
     <Button on:click={handleEditSave}>Enregistrer</Button>
+  </div>
+</Modal>
+
+<Modal isOpen={isDeleteModalOpen} title="Supprimer la moto" size="md" on:close={() => (isDeleteModalOpen = false)}>
+  <div class="flex items-start gap-3">
+    <div class="text-red-500 font-semibold">!</div>
+    <div>
+      <p class="font-medium text-slate-900">Confirmer la suppression ?</p>
+      <p class="text-sm text-slate-600 mt-1">
+        La moto <span class="font-semibold">{currentMotoModel ?? ''}</span> sera supprimée.
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-6 flex justify-end gap-2">
+    <Button variant="secondary" on:click={() => (isDeleteModalOpen = false)}>Annuler</Button>
+    <Button variant="danger" on:click={handleDeleteConfirm}>Supprimer</Button>
   </div>
 </Modal>

@@ -24,7 +24,7 @@
     formule: string;
   };
 
-  const MOCK_DEVIS: Devis[] = [
+  let devisList: Devis[] = [
     {
       id: 'D-2023-001',
       client: 'Sophie Martin',
@@ -137,9 +137,9 @@
         read: false
       }));
 
-  let notifications = makeNotifications(MOCK_DEVIS);
+  let notifications = makeNotifications(devisList);
 
-  $: filtered = MOCK_DEVIS.filter((d) => {
+  $: filtered = devisList.filter((d) => {
     const statusOk = filterStatus === 'all' ? true : d.status === filterStatus;
     const q = search.trim().toLowerCase();
     const searchOk =
@@ -166,6 +166,15 @@
   function handleDelete(d: Devis) {
     currentDevis = d;
     isDeleteModalOpen = true;
+  }
+
+  function handleDeleteConfirm() {
+    const id = currentDevis?.id;
+    if (!id) return;
+    devisList = devisList.filter((d) => d.id !== id);
+    notifications = notifications.filter((n) => n.id !== id);
+    currentDevis = null;
+    isDeleteModalOpen = false;
   }
 
   function handleResetFilters() {
@@ -366,7 +375,7 @@
 
     <div class="mt-6 flex justify-end gap-2">
       <Button variant="secondary" on:click={() => (isDeleteModalOpen = false)}>Annuler</Button>
-      <Button variant="danger" on:click={() => (isDeleteModalOpen = false)}>Supprimer</Button>
+      <Button variant="danger" on:click={handleDeleteConfirm}>Supprimer</Button>
     </div>
   {/if}
 </Modal>
