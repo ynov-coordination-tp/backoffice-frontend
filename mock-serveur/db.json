@@ -1,0 +1,238 @@
+{
+  "options": [
+    { "id": 1, "name": "Assurance complète", "price": 120, "targetType": "QUOTE" },
+    { "id": 2, "name": "Pack GPS", "price": 35, "targetType": "QUOTE_ITEM" },
+    { "id": 3, "name": "Pneus pluie", "price": 20, "targetType": "QUOTE_ITEM" },
+    { "id": 4, "name": "Assistance premium", "price": 75, "targetType": "QUOTE" }
+  ],
+  "customers": [
+    { "id": 101, "firstName": "Sophie", "lastName": "Martin", "email": "sophie.m@example.com", "phone": "06 12 34 56 78" },
+    { "id": 102, "firstName": "Marie", "lastName": "Leroy", "email": "marie.l@example.com", "phone": "07 11 22 33 44" },
+    { "id": 103, "firstName": "Thomas", "lastName": "Dubois", "email": "thomas@example.com", "phone": "06 98 76 54 32" }
+  ],
+  "tours": [
+    {
+      "id": 1,
+      "name": "Route des Alpes",
+      "country": "France",
+      "durationDays": 7,
+      "description": "Un itinéraire emblématique entre cols et lacs."
+    },
+    {
+      "id": 2,
+      "name": "Corse Sauvage",
+      "country": "France",
+      "durationDays": 5,
+      "description": "Côtes sauvages et routes sinueuses."
+    },
+    {
+      "id": 3,
+      "name": "Auvergne Volcanique",
+      "country": "France",
+      "durationDays": 4,
+      "description": "Paysages volcaniques et routes panoramiques."
+    }
+  ],
+  "formulas": [
+    { "id": 1, "name": "Athena", "includesMoto": true, "includesAccommodation": true, "includesMeals": true },
+    { "id": 2, "name": "Zeus", "includesMoto": true, "includesAccommodation": true, "includesMeals": false },
+    { "id": 3, "name": "Poseidon", "includesMoto": false, "includesAccommodation": true, "includesMeals": false }
+  ],
+  "tourFormulas": [
+    {
+      "id": 1,
+      "tour": {
+        "id": 1,
+        "name": "Route des Alpes",
+        "country": "France",
+        "durationDays": 7,
+        "description": "Un itinéraire emblématique entre cols et lacs."
+      },
+      "formula": { "id": 1, "name": "Athena", "includesMoto": true, "includesAccommodation": true, "includesMeals": true },
+      "isActive": true
+    },
+    {
+      "id": 2,
+      "tour": {
+        "id": 1,
+        "name": "Route des Alpes",
+        "country": "France",
+        "durationDays": 7,
+        "description": "Un itinéraire emblématique entre cols et lacs."
+      },
+      "formula": { "id": 2, "name": "Zeus", "includesMoto": true, "includesAccommodation": true, "includesMeals": false },
+      "isActive": true
+    },
+    {
+      "id": 3,
+      "tour": {
+        "id": 2,
+        "name": "Corse Sauvage",
+        "country": "France",
+        "durationDays": 5,
+        "description": "Côtes sauvages et routes sinueuses."
+      },
+      "formula": { "id": 3, "name": "Poseidon", "includesMoto": false, "includesAccommodation": true, "includesMeals": false },
+      "isActive": true
+    }
+  ],
+  "accommodations": [
+    { "id": 1, "name": "Hôtel des Sommets", "city": "Chamonix", "country": "France", "type": "HOTEL" },
+    { "id": 2, "name": "Casa Mare", "city": "Ajaccio", "country": "France", "type": "AIRBNB" },
+    { "id": 3, "name": "Auberge du Puy", "city": "Le Puy-en-Velay", "country": "France", "type": "GUESTHOUSE" }
+  ],
+  "motoCategories": [
+    { "id": 1, "name": "Roadster" },
+    { "id": 2, "name": "Trail" },
+    { "id": 3, "name": "GT" }
+  ],
+  "motoLocations": [
+    { "id": 1, "motoCategory": { "id": 2, "name": "Trail" }, "brand": "BMW", "model": "R1250 GS", "count": 6 },
+    { "id": 2, "motoCategory": { "id": 2, "name": "Trail" }, "brand": "Ducati", "model": "Multistrada V4", "count": 3 },
+    { "id": 3, "motoCategory": { "id": 3, "name": "GT" }, "brand": "Yamaha", "model": "Tracer 9 GT", "count": 5 },
+    { "id": 4, "motoCategory": { "id": 1, "name": "Roadster" }, "brand": "Triumph", "model": "Street Triple", "count": 4 }
+  ],
+  "quotes": [
+    {
+      "id": 1,
+      "quoteNumber": "Q-2024-0001",
+      "createdAt": "2024-06-01T10:15:00",
+      "departureDate": "2024-06-12",
+      "returnDate": "2024-06-19",
+      "customerId": 101,
+      "tourPackageId": 1,
+      "participantCount": 2,
+      "lockedTotalPrice": 2450,
+      "status": "CONFIRMED",
+      "items": [
+        {
+          "id": 11,
+          "quoteId": 1,
+          "participantName": "Sophie Martin",
+          "motoLocationId": 1,
+          "accommodationId": 1,
+          "lockedUnitPrice": 1100,
+          "options": [
+            { "id": 111, "quoteItemId": 11, "optionId": 2, "quantity": 1, "lockedPrice": 35 }
+          ]
+        },
+        {
+          "id": 12,
+          "quoteId": 1,
+          "participantName": "Thomas Dubois",
+          "motoLocationId": 1,
+          "accommodationId": 1,
+          "lockedUnitPrice": 1100,
+          "options": [
+            { "id": 112, "quoteItemId": 12, "optionId": 3, "quantity": 2, "lockedPrice": 40 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "quoteNumber": "Q-2024-0002",
+      "createdAt": "2024-07-05T08:45:00",
+      "departureDate": "2024-07-12",
+      "returnDate": "2024-07-17",
+      "customerId": 102,
+      "tourPackageId": 3,
+      "participantCount": 1,
+      "lockedTotalPrice": 1890,
+      "status": "SENT",
+      "items": [
+        {
+          "id": 21,
+          "quoteId": 2,
+          "participantName": "Marie Leroy",
+          "motoLocationId": null,
+          "accommodationId": 2,
+          "lockedUnitPrice": 1890,
+          "options": [
+            { "id": 211, "quoteItemId": 21, "optionId": 1, "quantity": 1, "lockedPrice": 120 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "quoteNumber": "Q-2024-0003",
+      "createdAt": "2024-08-01T14:30:00",
+      "customerId": 103,
+      "tourPackageId": 2,
+      "participantCount": 2,
+      "lockedTotalPrice": 3100,
+      "status": "PENDING_PROGRESS",
+      "items": [
+        {
+          "id": 31,
+          "quoteId": 3,
+          "participantName": "Thomas Dubois",
+          "motoLocationId": 2,
+          "accommodationId": 2,
+          "lockedUnitPrice": 1500,
+          "options": [
+            { "id": 311, "quoteItemId": 31, "optionId": 2, "quantity": 1, "lockedPrice": 35 }
+          ]
+        },
+        {
+          "id": 32,
+          "quoteId": 3,
+          "participantName": "Julie Moreau",
+          "motoLocationId": 3,
+          "accommodationId": 2,
+          "lockedUnitPrice": 1600,
+          "options": [
+            { "id": 312, "quoteItemId": 32, "optionId": 3, "quantity": 1, "lockedPrice": 20 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "quoteNumber": "Q-2024-0004",
+      "createdAt": "2024-09-01T09:00:00",
+      "departureDate": "2024-09-15",
+      "returnDate": "2024-09-20",
+      "customerId": 102,
+      "tourPackageId": 1,
+      "participantCount": 1,
+      "lockedTotalPrice": 2100,
+      "status": "CANCELLED",
+      "items": [
+        {
+          "id": 41,
+          "quoteId": 4,
+          "participantName": "Marie Leroy",
+          "motoLocationId": 4,
+          "accommodationId": 1,
+          "lockedUnitPrice": 2100,
+          "options": [
+            { "id": 411, "quoteItemId": 41, "optionId": 4, "quantity": 1, "lockedPrice": 75 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "quoteNumber": "Q-2024-0005",
+      "createdAt": "2024-10-02T11:20:00",
+      "customerId": 103,
+      "tourPackageId": 2,
+      "participantCount": 1,
+      "lockedTotalPrice": 1750,
+      "status": "PENDING_NEW",
+      "items": [
+        {
+          "id": 51,
+          "quoteId": 5,
+          "participantName": "Thomas Dubois",
+          "motoLocationId": 2,
+          "accommodationId": 3,
+          "lockedUnitPrice": 1750,
+          "options": []
+        }
+      ]
+    }
+  ]
+}

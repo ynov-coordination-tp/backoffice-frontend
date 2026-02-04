@@ -1,0 +1,18 @@
+{
+  "/api/auth/login": "/auth/login",
+  "/api/options": "/options",
+  "/api/options/:id": "/options/:id",
+  "/api/customers": "/customers",
+  "/api/customers/:id": "/customers/:id",
+  "/api/tours": "/tours",
+  "/api/tours/:id": "/tours/:id",
+  "/api/tour-formulas": "/tourFormulas",
+  "/api/tour-formulas/:id": "/tourFormulas/:id",
+  "/api/accommodations": "/accommodations",
+  "/api/accommodations/:id": "/accommodations/:id",
+  "/api/moto-locations": "/motoLocations",
+  "/api/moto-categories": "/motoCategories",
+  "/api/quotes": "/quotes",
+  "/api/quotes/:id": "/quotes/:id",
+  "/api/*": "/$1"
+}
