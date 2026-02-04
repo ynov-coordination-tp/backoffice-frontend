@@ -9,3 +9,5 @@ npm-debug.log*
 .git
 .gitignore
 .idea
+.env
+.env.local
