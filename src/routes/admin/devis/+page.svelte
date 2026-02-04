@@ -1,166 +1,212 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Header from '$lib/components/Header.svelte';
   import type { NotificationItem } from '$lib/types/notifications';
+  import {
+    quotesStore,
+    loadQuotes,
+    deleteQuote,
+    updateQuote,
+    updateCustomer,
+    type Devis,
+    type DevisStatus
+  } from '$lib/stores/quotes';
+  import { QuoteStatus } from '$lib/types/api';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import Input from '$lib/components/ui/Input.svelte';
   import Select from '$lib/components/ui/Select.svelte';
   import Badge from '$lib/components/ui/Badge.svelte';
   import Modal from '$lib/components/ui/Modal.svelte';
-  import { Download, Edit2, Eye, FileText, Filter, Trash2, XCircle } from 'lucide-svelte';
+  import { Download, Edit2, Eye, Filter, Trash2, XCircle } from 'lucide-svelte';
 
-  type DevisStatus = 'confirmed' | 'pending' | 'draft' | 'cancelled';
   type Option = { value: string; label: string };
-  type Devis = {
-    id: string;
-    client: string;
-    email: string;
-    phone: string;
-    circuit: string;
-    date: string;
-    amount: string;
-    status: DevisStatus;
-    notes: string;
-    formule: string;
-  };
-
-  let devisList: Devis[] = [
-    {
-      id: 'D-2023-001',
-      client: 'Sophie Martin',
-      email: 'sophie.m@example.com',
-      phone: '06 12 34 56 78',
-      circuit: 'Route des Alpes',
-      date: '12/06/2024',
-      amount: '2 450 €',
-      status: 'confirmed',
-      notes: 'Régime végétarien demandé.',
-      formule: 'Poseidon'
-    },
-    {
-      id: 'D-2023-002',
-      client: 'Thomas Dubois',
-      email: 'thomas@example.com',
-      phone: '06 98 76 54 32',
-      circuit: 'Corse Sauvage',
-      date: '05/07/2024',
-      amount: '3 100 €',
-      status: 'pending',
-      notes: '',
-      formule: 'Zeus'
-    },
-    {
-      id: 'D-2023-003',
-      client: 'Marie Leroy',
-      email: 'marie.l@example.com',
-      phone: '07 11 22 33 44',
-      circuit: 'Pyrénées Est',
-      date: '22/08/2024',
-      amount: '1 890 €',
-      status: 'draft',
-      notes: 'Hésite entre deux dates.',
-      formule: 'Athena'
-    },
-    {
-      id: 'D-2023-004',
-      client: 'Lucas Bernard',
-      email: 'lucas.b@example.com',
-      phone: '06 55 44 33 22',
-      circuit: 'Auvergne Volcanique',
-      date: '10/09/2024',
-      amount: '1 250 €',
-      status: 'cancelled',
-      notes: 'Annulé pour raisons de santé.',
-      formule: 'Athena'
-    }
-  ];
+  let devisList: Devis[] = [];
 
   let filterStatus: 'all' | DevisStatus = 'all';
-  let search = '';
+  let filterId = '';
+  let filterClient = '';
+  let filterEmail = '';
+  let filterPhone = '';
+  let filterCircuit = '';
+  let filterFormule = '';
+  let filterDeparture = '';
+  let filterReturn = '';
+  let filterAmount = '';
 
-  let isCreateModalOpen = false;
   let isEditModalOpen = false;
   let isViewModalOpen = false;
   let isDeleteModalOpen = false;
   let isExportModalOpen = false;
 
   let currentDevis: Devis | null = null;
+  type StatusUi = 'pending_new' | 'pending_progress' | 'sent' | 'confirmed' | 'cancelled';
+
+  let editForm: {
+    client: string;
+    email: string;
+    phone: string;
+    status: StatusUi;
+  } = {
+    client: '',
+    email: '',
+    phone: '',
+    status: 'pending_new'
+  };
 
   const statusOptions: Option[] = [
     { value: 'all', label: 'Tous' },
-    { value: 'confirmed', label: 'Confirmé' },
-    { value: 'pending', label: 'En attente' },
-    { value: 'draft', label: 'Brouillon' },
+    { value: 'pending_new', label: 'Non traité' },
+    { value: 'pending_progress', label: 'En cours' },
+    { value: 'sent', label: 'Envoyé' },
+    { value: 'confirmed', label: 'Validé' },
     { value: 'cancelled', label: 'Annulé' }
   ];
 
   type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'purple';
 
-  const badgeVariant = (status: DevisStatus): BadgeVariant => {
-    switch (status) {
+  const statusLabelFor = (devis: Devis): string => {
+    switch (devis.status) {
       case 'confirmed':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'cancelled':
-        return 'error';
-      case 'draft':
-        return 'info';
-      default:
-        return 'neutral';
-    }
-  };
-
-  const statusLabel = (status: DevisStatus): string => {
-    switch (status) {
-      case 'confirmed':
-        return 'Confirmé';
-      case 'pending':
-        return 'En attente';
+        return 'Validé';
       case 'cancelled':
         return 'Annulé';
-      case 'draft':
-        return 'Brouillon';
+      case 'pending_progress':
+        return 'En cours';
+      case 'sent':
+        return 'Envoyé';
+      case 'pending_new':
+        return 'Non traité';
       default:
         return 'Inconnu';
     }
   };
 
-  const makeNotifications = (items: Devis[]): NotificationItem[] =>
+  const badgeVariantFor = (devis: Devis): BadgeVariant => {
+    switch (devis.status) {
+      case 'confirmed':
+        return 'success';
+      case 'cancelled':
+        return 'error';
+      case 'pending_progress':
+        return 'warning';
+      case 'sent':
+        return 'info';
+      case 'pending_new':
+        return 'neutral';
+      default:
+        return 'neutral';
+    }
+  };
+
+  const makeNotifications = (items: Devis[], readById: Record<string, boolean>): NotificationItem[] =>
     items
-      .filter((d) => d.status === 'pending' || d.status === 'draft')
+      .filter((d) => d.status === 'pending_new' || d.status === 'pending_progress' || d.status === 'sent')
       .map((d) => ({
         id: d.id,
-        title: `Devis ${statusLabel(d.status)}`,
+        title: `Devis ${statusLabelFor(d)}`,
         description: `${d.client} - ${d.circuit}`,
         date: d.date,
-        read: false
+        read: readById[d.id] ?? false
       }));
 
-  let notifications = makeNotifications(devisList);
+  let readById: Record<string, boolean> = {};
+  let notifications: NotificationItem[] = [];
+
+  onMount(() => {
+    loadQuotes();
+  });
+
+  $: devisList = $quotesStore.items;
+  $: notifications = makeNotifications(devisList, readById);
+
+  const editStatusOptions: Option[] = [
+    { value: 'pending_new', label: 'Non traité' },
+    { value: 'pending_progress', label: 'En cours' },
+    { value: 'sent', label: 'Envoyé' },
+    { value: 'confirmed', label: 'Validé' },
+    { value: 'cancelled', label: 'Annulé' }
+  ];
+
+  const normalize = (value: string) => value.trim().toLowerCase();
+  const normalizePhone = (value: string) => value.replace(/\D/g, '');
+  const formatDate = (value?: string) => {
+    if (!value) return '—';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat('fr-FR').format(date);
+  };
+  const toIsoDate = (value: string) => {
+    const v = value.trim();
+    if (!v) return null;
+    let y: string;
+    let m: string;
+    let d: string;
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(v)) {
+      [d, m, y] = v.split('/');
+    } else if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+      [y, m, d] = v.split('-');
+    } else {
+      return null;
+    }
+    const iso = `${y}-${m}-${d}`;
+    const check = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d)));
+    if (
+      Number.isNaN(check.getTime()) ||
+      check.getUTCFullYear() !== Number(y) ||
+      check.getUTCMonth() + 1 !== Number(m) ||
+      check.getUTCDate() !== Number(d)
+    ) {
+      return null;
+    }
+    return iso;
+  };
 
   $: filtered = devisList.filter((d) => {
     const statusOk = filterStatus === 'all' ? true : d.status === filterStatus;
-    const q = search.trim().toLowerCase();
-    const searchOk =
-      !q ||
-      d.id.toLowerCase().includes(q) ||
-      d.client.toLowerCase().includes(q) ||
-      d.circuit.toLowerCase().includes(q) ||
-      d.formule.toLowerCase().includes(q);
-    return statusOk && searchOk;
+    const idOk = !filterId || d.id.toLowerCase().includes(normalize(filterId));
+    const clientOk = !filterClient || d.client.toLowerCase().includes(normalize(filterClient));
+    const emailOk = !filterEmail || d.email.toLowerCase().includes(normalize(filterEmail));
+    const phoneOk =
+      !filterPhone || normalizePhone(d.phone).includes(normalizePhone(filterPhone));
+    const circuitOk = !filterCircuit || d.circuit.toLowerCase().includes(normalize(filterCircuit));
+    const formuleOk = !filterFormule || d.formule.toLowerCase().includes(normalize(filterFormule));
+    const departureIso = toIsoDate(filterDeparture);
+    const returnIso = toIsoDate(filterReturn);
+    const departureOk = !departureIso || d.departureDate === departureIso;
+    const returnOk = !returnIso || d.returnDate === returnIso;
+
+    const min = filterAmount ? Number(filterAmount) : null;
+    const amountValue = d.amountRaw ?? null;
+    const amountMinOk =
+      min === null || Number.isNaN(min) ? true : amountValue !== null && amountValue >= min;
+
+    return (
+      statusOk &&
+      idOk &&
+      clientOk &&
+      emailOk &&
+      phoneOk &&
+      circuitOk &&
+      formuleOk &&
+      departureOk &&
+      returnOk &&
+      amountMinOk
+    );
   });
 
-  function handleCreate() {
-    currentDevis = null;
-    isCreateModalOpen = true;
-  }
   function handleView(d: Devis) {
     currentDevis = d;
     isViewModalOpen = true;
   }
   function handleEdit(d: Devis) {
     currentDevis = d;
+    editForm = {
+      client: d.client,
+      email: d.email,
+      phone: d.phone,
+      status: d.status
+    };
     isEditModalOpen = true;
   }
   function handleDelete(d: Devis) {
@@ -168,27 +214,82 @@
     isDeleteModalOpen = true;
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
+    const apiId = currentDevis?.apiId;
     const id = currentDevis?.id;
-    if (!id) return;
-    devisList = devisList.filter((d) => d.id !== id);
-    notifications = notifications.filter((n) => n.id !== id);
+    if (!apiId || !id) return;
+    await deleteQuote(apiId);
+    readById = Object.fromEntries(Object.entries(readById).filter(([key]) => key !== id));
     currentDevis = null;
     isDeleteModalOpen = false;
   }
 
   function handleResetFilters() {
     filterStatus = 'all';
-    search = '';
+    filterId = '';
+    filterClient = '';
+    filterEmail = '';
+    filterPhone = '';
+    filterCircuit = '';
+    filterFormule = '';
+    filterDeparture = '';
+    filterReturn = '';
+    filterAmount = '';
   }
 
   const markAllRead = () => {
-    notifications = notifications.map((n) => ({ ...n, read: true }));
+    readById = Object.fromEntries(notifications.map((n) => [n.id, true]));
   };
 
   const markRead = (id: string) => {
-    notifications = notifications.map((n) => (n.id === id ? { ...n, read: true } : n));
+    readById = { ...readById, [id]: true };
   };
+
+  const toApiStatus = (status: StatusUi) => {
+    switch (status) {
+      case 'confirmed':
+        return QuoteStatus.Confirmed;
+      case 'cancelled':
+        return QuoteStatus.Cancelled;
+      case 'pending_progress':
+        return QuoteStatus.PendingProgress;
+      case 'sent':
+        return QuoteStatus.Sent;
+      case 'pending_new':
+        return QuoteStatus.PendingNew;
+      default:
+        return QuoteStatus.PendingNew;
+    }
+  };
+
+  const splitName = (value: string) => {
+    const parts = value.trim().split(/\s+/).filter(Boolean);
+    const firstName = parts.shift() ?? '';
+    const lastName = parts.join(' ');
+    return { firstName, lastName };
+  };
+
+  async function handleEditSave() {
+    if (!currentDevis) return;
+    const customerId = currentDevis.customerId;
+
+    if (customerId) {
+      const { firstName, lastName } = splitName(editForm.client);
+      await updateCustomer(customerId, {
+        firstName,
+        lastName,
+        email: editForm.email,
+        phone: editForm.phone
+      });
+    }
+
+    await updateQuote(currentDevis.apiId, {
+      status: toApiStatus(editForm.status)
+    });
+
+    currentDevis = null;
+    isEditModalOpen = false;
+  }
 </script>
 
 <Header
@@ -199,60 +300,129 @@
   on:markAllRead={markAllRead}
   on:markRead={(event) => markRead(event.detail)}
 >
-  <Button variant="secondary" on:click={() => (isExportModalOpen = true)}>
-    <Download class="w-4 h-4 mr-2" />
-    Exporter
-  </Button>
-  <Button on:click={handleCreate}>
-    <FileText class="w-4 h-4 mr-2" />
-    Nouveau devis
-  </Button>
 </Header>
 
-<div class="p-8 space-y-6">
-  <Card>
-    <div class="flex flex-col md:flex-row gap-4 md:items-end">
-      <div class="flex-1">
-        <Input bind:value={search} placeholder="Rechercher un devis, client, circuit..." />
-      </div>
-      <div class="w-full md:w-64">
-        <Select label="Statut" bind:value={filterStatus} options={statusOptions} />
-      </div>
-      <Button variant="secondary" on:click={handleResetFilters}>
-        <Filter class="w-4 h-4 mr-2" />
-        Réinitialiser
+<div class="p-4 sm:p-6 lg:p-8 space-y-6 min-w-0 max-w-full">
+  <Card title="Liste des devis" subtitle={`${filtered.length} résultat(s)`} className="overflow-visible min-w-0 w-full" noPadding>
+    <svelte:fragment slot="action">
+      <Button variant="secondary" on:click={() => (isExportModalOpen = true)}>
+        <Download class="w-4 h-4 mr-2" />
+        Exporter
       </Button>
-    </div>
-  </Card>
-
-  <Card title="Liste des devis" subtitle={`${filtered.length} résultat(s)`}>
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-slate-200">
+    </svelte:fragment>
+    <div class="px-4 sm:px-6 pb-4 sm:pb-6 min-w-0">
+      <div class="w-full max-w-full overflow-x-auto overscroll-x-contain">
+        <table class="w-full min-w-[900px] table-fixed divide-y divide-slate-200">
         <thead class="bg-slate-50">
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">N° Devis</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Client</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Email</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Téléphone</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Circuit</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Départ</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Retour</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Formule</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Montant</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Montant min</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Statut</th>
             <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+          </tr>
+          <tr class="border-t border-slate-200">
+            <th class="px-6 py-2">
+              <input
+                class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+                placeholder="Filtrer"
+                bind:value={filterId}
+              />
+            </th>
+            <th class="px-6 py-2">
+              <input
+                class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+                placeholder="Filtrer"
+                bind:value={filterClient}
+              />
+            </th>
+            <th class="px-6 py-2">
+              <input
+                class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+                placeholder="Filtrer"
+                bind:value={filterEmail}
+              />
+            </th>
+            <th class="px-6 py-2">
+              <input
+                class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+                placeholder="Filtrer"
+                bind:value={filterPhone}
+              />
+            </th>
+            <th class="px-6 py-2">
+              <input
+                class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+                placeholder="Filtrer"
+                bind:value={filterCircuit}
+              />
+            </th>
+            <th class="px-6 py-2">
+              <input
+                type="date"
+                lang="fr"
+                class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+                bind:value={filterDeparture}
+              />
+            </th>
+            <th class="px-6 py-2">
+              <input
+                type="date"
+                lang="fr"
+                class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+                bind:value={filterReturn}
+              />
+            </th>
+            <th class="px-6 py-2">
+              <input
+                class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+                placeholder="Filtrer"
+                bind:value={filterFormule}
+              />
+            </th>
+            <th class="px-6 py-2">
+              <input
+                type="number"
+                class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+                placeholder="Min"
+                bind:value={filterAmount}
+              />
+            </th>
+            <th class="px-6 py-2">
+              <select
+                class="w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-slate-400 focus:outline-none"
+                bind:value={filterStatus}
+              >
+                {#each statusOptions as option}
+                  <option value={option.value}>{option.label}</option>
+                {/each}
+              </select>
+            </th>
+            <th class="px-6 py-2"></th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-slate-200">
           {#each filtered as devis, idx (devis.id)}
             <tr class={`hover:bg-slate-50 transition-colors duration-150 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{devis.id}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{devis.client}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{devis.circuit}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{devis.date}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{devis.formule}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{devis.amount}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <Badge variant={badgeVariant(devis.status)}>{statusLabel(devis.status)}</Badge>
+              <td class="px-6 py-4 text-sm font-medium text-slate-900 break-words">{devis.id}</td>
+              <td class="px-6 py-4 text-sm text-slate-700 break-words">{devis.client}</td>
+              <td class="px-6 py-4 text-sm text-slate-700 break-words">{devis.email}</td>
+              <td class="px-6 py-4 text-sm text-slate-700 break-words">{devis.phone}</td>
+              <td class="px-6 py-4 text-sm text-slate-700 break-words">{devis.circuit}</td>
+              <td class="px-6 py-4 text-sm text-slate-700 break-words">{formatDate(devis.departureDate)}</td>
+              <td class="px-6 py-4 text-sm text-slate-700 break-words">{formatDate(devis.returnDate)}</td>
+              <td class="px-6 py-4 text-sm text-slate-700 break-words">{devis.formule}</td>
+              <td class="px-6 py-4 text-sm text-slate-700 break-words">{devis.amount}</td>
+              <td class="px-6 py-4 text-sm break-words">
+                <Badge variant={badgeVariantFor(devis)}>{statusLabelFor(devis)}</Badge>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+              <td class="px-6 py-4 text-sm text-right break-words">
                 <div class="inline-flex items-center gap-1">
                   <button class="p-2 rounded hover:bg-slate-100 text-slate-500" on:click={() => handleView(devis)} type="button" aria-label="Voir">
                     <Eye class="w-4 h-4" />
@@ -268,9 +438,14 @@
             </tr>
           {/each}
         </tbody>
-      </table>
+        </table>
+      </div>
 
-      {#if filtered.length === 0}
+      {#if $quotesStore.loading}
+        <div class="text-center py-12 text-slate-500 text-sm">Chargement...</div>
+      {:else if $quotesStore.error}
+        <div class="text-center py-12 text-red-600 text-sm">{$quotesStore.error}</div>
+      {:else if filtered.length === 0}
         <div class="text-center py-12 text-slate-500 text-sm">Aucune donnée disponible</div>
       {/if}
     </div>
@@ -294,16 +469,58 @@
       <div class="space-y-3">
         <div class="text-sm text-slate-500">Circuit</div>
         <div class="font-semibold">{currentDevis.circuit}</div>
-        <div class="text-sm text-slate-500">Date</div>
-        <div class="font-semibold">{currentDevis.date}</div>
+        <div class="text-sm text-slate-500">Départ</div>
+        <div class="font-semibold">{formatDate(currentDevis.departureDate)}</div>
+        <div class="text-sm text-slate-500">Retour</div>
+        <div class="font-semibold">{formatDate(currentDevis.returnDate)}</div>
         <div class="text-sm text-slate-500">Formule</div>
         <div class="font-semibold">{currentDevis.formule}</div>
         <div class="text-sm text-slate-500">Montant</div>
         <div class="font-semibold">{currentDevis.amount}</div>
         <div class="text-sm text-slate-500">Statut</div>
-        <Badge variant={badgeVariant(currentDevis.status)}>{statusLabel(currentDevis.status)}</Badge>
+        <Badge variant={badgeVariantFor(currentDevis)}>{statusLabelFor(currentDevis)}</Badge>
+        {#if currentDevis.participantCount}
+          <div class="text-sm text-slate-500">Participants</div>
+          <div class="font-semibold">{currentDevis.participantCount}</div>
+        {/if}
       </div>
     </div>
+
+    {#if currentDevis.participantsDetails.length > 0}
+      <div class="mt-6 bg-slate-50 border border-slate-200 rounded-lg p-4">
+        <div class="text-sm font-medium text-slate-700 mb-3">Participants</div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="text-xs uppercase text-slate-500 border-b border-slate-200">
+              <tr>
+                <th class="py-2 text-left font-medium">Participant</th>
+                <th class="py-2 text-left font-medium">Moto</th>
+                <th class="py-2 text-left font-medium">Hébergement</th>
+                <th class="py-2 text-left font-medium">Options</th>
+                <th class="py-2 text-right font-medium">Prix</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {#each currentDevis.participantsDetails as participant}
+                <tr>
+                  <td class="py-2 pr-4 text-slate-700">{participant.name}</td>
+                  <td class="py-2 pr-4 text-slate-700">{participant.moto ?? '—'}</td>
+                  <td class="py-2 pr-4 text-slate-700">{participant.accommodation ?? '—'}</td>
+                  <td class="py-2 pr-4 text-slate-700">
+                    {#if participant.options.length > 0}
+                      {participant.options.join(', ')}
+                    {:else}
+                      —
+                    {/if}
+                  </td>
+                  <td class="py-2 text-right text-slate-700">{participant.unitPrice}</td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {/if}
 
     {#if currentDevis.notes}
       <div class="mt-6 bg-slate-50 border border-slate-200 rounded-lg p-4">
@@ -316,8 +533,10 @@
       <Button variant="secondary" on:click={() => (isViewModalOpen = false)}>Fermer</Button>
       <Button
         on:click={() => {
+          const devis = currentDevis;
+          if (!devis) return;
           isViewModalOpen = false;
-          isEditModalOpen = true;
+          handleEdit(devis);
         }}
       >
         Modifier
@@ -326,38 +545,17 @@
   {/if}
 </Modal>
 
-<!-- CREATE / EDIT (maquette) -->
-<Modal isOpen={isCreateModalOpen} title="Créer un devis" size="xl" on:close={() => (isCreateModalOpen = false)}>
-  <p class="text-slate-600 text-sm mb-6">
-    Remplissez les informations ci-dessous pour créer un nouveau devis pour un client intéressé par nos circuits moto.(pas encore connecter)
-  </p>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <Input label="Client" placeholder="Nom et prénom" />
-    <Input label="Email" placeholder="email@exemple.com" type="email" />
-    <Input label="Téléphone" placeholder="06 ..." />
-    <Input label="Date" placeholder="JJ/MM/AAAA" />
-    <Input label="Circuit" placeholder="Route des Alpes" />
-    <Input label="Formule" placeholder="Athena / Zeus / ..." />
-  </div>
-  <div class="mt-6 flex justify-end gap-2">
-    <Button variant="secondary" on:click={() => (isCreateModalOpen = false)}>Annuler</Button>
-    <Button isLoading={false}>Créer</Button>
-  </div>
-</Modal>
-
 <Modal isOpen={isEditModalOpen} title="Modifier un devis" size="xl" on:close={() => (isEditModalOpen = false)}>
   {#if currentDevis}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Input label="Client" value={currentDevis.client} />
-      <Input label="Email" value={currentDevis.email} type="email" />
-      <Input label="Téléphone" value={currentDevis.phone} />
-      <Input label="Date" value={currentDevis.date} />
-      <Input label="Circuit" value={currentDevis.circuit} />
-      <Input label="Formule" value={currentDevis.formule} />
+      <Input label="Client" bind:value={editForm.client} />
+      <Input label="Email" type="email" bind:value={editForm.email} />
+      <Input label="Téléphone" bind:value={editForm.phone} />
+      <Select label="Statut" options={editStatusOptions} bind:value={editForm.status} />
     </div>
     <div class="mt-6 flex justify-end gap-2">
       <Button variant="secondary" on:click={() => (isEditModalOpen = false)}>Annuler</Button>
-      <Button>Enregistrer</Button>
+      <Button on:click={handleEditSave}>Enregistrer</Button>
     </div>
   {/if}
 </Modal>
